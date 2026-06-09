@@ -1,0 +1,1715 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="서울소방항공">
+<title>서울소방항공대 항공출동 관리 시스템</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ── 기본 변수 ── */
+:root {
+  --bg:      #0a0e1a;
+  --bg2:     #111827;
+  --bg3:     #1a2233;
+  --bg4:     #1f2a40;
+  --border:  #2a3a55;
+  --border2: #344d6b;
+  --text:    #e2e8f4;
+  --text2:   #7a90b0;
+  --text3:   #4a6080;
+  --blue:    #3b82f6;
+  --blue2:   #1d4ed8;
+  --green:   #22c55e;
+  --red:     #ef4444;
+  --amber:   #f59e0b;
+  --cyan:    #06b6d4;
+  --green-bg:  rgba(34,197,94,.12);
+  --red-bg:    rgba(239,68,68,.12);
+  --amber-bg:  rgba(245,158,11,.12);
+  --blue-bg:   rgba(59,130,246,.12);
+  --green-bd:  rgba(34,197,94,.3);
+  --red-bd:    rgba(239,68,68,.3);
+  --amber-bd:  rgba(245,158,11,.3);
+  --blue-bd:   rgba(59,130,246,.3);
+  --radius:  8px;
+  --radius-lg: 12px;
+  --font:    'Noto Sans KR', sans-serif;
+  --mono:    'JetBrains Mono', monospace;
+  --shadow:  0 4px 24px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;-webkit-text-size-adjust:100%}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* ── 레이아웃 ── */
+#app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+/* ── 헤더 ── */
+#header{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 16px;
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+  position:relative;
+  z-index:100;
+}
+.logo-wrap{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.logo-icon{font-size:22px}
+.logo-text{font-size:14px;font-weight:700;color:var(--text);white-space:nowrap}
+.logo-sub{font-size:10px;color:var(--text3);margin-top:1px}
+.ref-badge{
+  font-size:9px;font-weight:700;letter-spacing:.08em;
+  padding:3px 10px;border-radius:4px;
+  background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd);
+  white-space:nowrap;flex-shrink:0;
+}
+#clock{font-family:var(--mono);font-size:11px;color:var(--text2);white-space:nowrap;flex-shrink:0}
+
+/* ── 탭 바 ── */
+#tab-bar{
+  display:flex;overflow-x:auto;
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  flex-shrink:0;
+  scrollbar-width:none;
+}
+#tab-bar::-webkit-scrollbar{display:none}
+.tab-btn{
+  padding:10px 14px;font-size:12px;font-weight:500;
+  white-space:nowrap;cursor:pointer;border:none;background:none;
+  color:var(--text2);border-bottom:2px solid transparent;
+  transition:all .15s;font-family:var(--font);
+  -webkit-tap-highlight-color:transparent;
+}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--blue);border-bottom-color:var(--blue)}
+
+/* ── 패널 ── */
+#panels{flex:1;overflow:hidden;position:relative}
+.panel{display:none;height:100%;overflow-y:auto;padding:12px}
+.panel.active{display:block}
+
+/* ── 카드 ── */
+.card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:14px 16px;
+  margin-bottom:12px;
+}
+.card-title{
+  font-size:11px;font-weight:600;color:var(--text2);
+  text-transform:uppercase;letter-spacing:.08em;
+  margin-bottom:12px;
+  display:flex;align-items:center;gap:6px;
+}
+.card-title::before{content:'';display:inline-block;width:3px;height:12px;background:var(--blue);border-radius:2px}
+
+/* ── 폼 요소 ── */
+.field-group{margin-bottom:10px}
+.field-label{font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500}
+input,select,textarea{
+  width:100%;padding:8px 12px;
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:var(--radius);color:var(--text);
+  font-family:var(--font);font-size:13px;outline:none;
+  transition:border-color .15s;
+  -webkit-appearance:none;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--blue)}
+.mono-input{font-family:var(--mono)}
+textarea{min-height:64px;resize:vertical;line-height:1.5}
+select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237a90b0' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+
+/* ── 버튼 ── */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 16px;border-radius:var(--radius);
+  border:none;cursor:pointer;font-family:var(--font);
+  font-size:12px;font-weight:600;transition:all .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:var(--blue2)}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover{color:var(--text);border-color:var(--border2)}
+.btn-danger{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd)}
+.btn-success{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd)}
+.btn-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+
+/* ── 배지 ── */
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd)}
+.badge-red{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd)}
+.badge-amber{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd)}
+.badge-blue{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-bd)}
+
+/* ── 체크박스 커스텀 ── */
+.check-item{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:8px 10px;border-radius:var(--radius);
+  margin-bottom:4px;cursor:pointer;
+  transition:background .1s;
+}
+.check-item:hover{background:var(--bg3)}
+.check-item input[type=checkbox]{
+  width:16px;height:16px;flex-shrink:0;margin-top:1px;
+  accent-color:var(--blue);cursor:pointer;
+}
+.check-text{font-size:12px;line-height:1.5;color:var(--text)}
+.check-tag{
+  font-size:9px;font-weight:700;padding:1px 6px;
+  border-radius:3px;margin-right:4px;
+}
+
+/* ── 라디오 버튼 ── */
+.radio-group{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.radio-btn{
+  padding:6px 14px;border-radius:var(--radius);
+  border:1px solid var(--border2);background:var(--bg3);
+  color:var(--text2);cursor:pointer;font-size:12px;font-weight:500;
+  transition:all .15s;-webkit-tap-highlight-color:transparent;
+}
+.radio-btn.selected{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-bd)}
+
+/* ── 판정 박스 ── */
+.verdict{
+  padding:14px 16px;border-radius:var(--radius);
+  text-align:center;font-size:18px;font-weight:700;
+  margin-top:8px;border:1px solid;
+}
+.verdict.ok{background:var(--green-bg);color:var(--green);border-color:var(--green-bd)}
+.verdict.warn{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-bd)}
+.verdict.fail{background:var(--red-bg);color:var(--red);border-color:var(--red-bd)}
+
+/* ── 진행률 바 ── */
+.progress-wrap{height:4px;background:var(--bg4);border-radius:2px;margin-bottom:10px;overflow:hidden}
+.progress-bar{height:100%;border-radius:2px;background:var(--blue);transition:width .3s}
+
+/* ── 기상 텍스트 ── */
+.wx-block{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--radius);padding:10px 12px;
+  font-family:var(--mono);font-size:11px;line-height:1.7;
+  color:var(--cyan);white-space:pre-wrap;word-break:break-all;
+  margin-bottom:6px;
+}
+.wx-label{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.wx-station{
+  font-size:11px;font-weight:700;padding:5px 10px;
+  background:var(--bg4);border-radius:var(--radius);
+  color:var(--blue);margin-bottom:6px;
+}
+
+/* ── 정비현황 테이블 ── */
+.maint-table{width:100%;border-collapse:collapse;font-size:11px}
+.maint-table th{
+  padding:6px 8px;text-align:left;font-weight:600;
+  background:var(--bg4);color:var(--text2);
+  border-bottom:1px solid var(--border);font-size:10px;
+  text-transform:uppercase;letter-spacing:.05em;
+}
+.maint-table td{padding:6px 8px;border-bottom:1px solid var(--border);vertical-align:middle}
+.maint-table tr:last-child td{border-bottom:none}
+.maint-table tr:hover td{background:var(--bg3)}
+
+/* ── 모달 ── */
+#modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.75);z-index:1000;
+  overflow-y:auto;padding:20px;
+}
+#modal-overlay.open{display:flex;align-items:flex-start;justify-content:center}
+.modal{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:20px;
+  width:100%;max-width:560px;margin:auto;
+}
+.modal-title{font-size:14px;font-weight:700;margin-bottom:16px;display:flex;justify-content:space-between}
+.modal-close{background:none;border:none;color:var(--text2);font-size:18px;cursor:pointer}
+
+/* ── ATS 미리보기 ── */
+.ats-block{
+  background:#0d1117;border:1px solid var(--border2);
+  border-radius:var(--radius);padding:14px;
+  font-family:var(--mono);font-size:11.5px;line-height:1.7;
+  color:#7ee787;white-space:pre;overflow-x:auto;
+}
+
+/* ── 링크 카드 ── */
+.law-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--radius);padding:12px 14px;
+  margin-bottom:8px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.law-info{flex:1;min-width:0}
+.law-name{font-size:12px;font-weight:600;color:var(--blue);margin-bottom:2px}
+.law-desc{font-size:10px;color:var(--text2)}
+
+/* ── 요약 카드 3열 ── */
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.summary-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--radius);padding:12px;text-align:center;
+}
+.summary-ac{font-size:10px;color:var(--text2);margin-bottom:4px}
+.summary-status{font-size:13px;font-weight:700}
+
+/* ── 그리드 레이아웃 ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+@media(max-width:500px){.grid-2,.grid-3{grid-template-columns:1fr}}
+
+/* ── 섹션 레이블 ── */
+.section-label{
+  font-size:10px;font-weight:600;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.1em;
+  margin-bottom:8px;margin-top:4px;
+}
+
+/* ── 출동유형 버튼 ── */
+.mission-btn{
+  flex:1;padding:12px 8px;border-radius:var(--radius);
+  border:1px solid var(--border2);background:var(--bg3);
+  cursor:pointer;text-align:center;transition:all .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.mission-btn .m-icon{font-size:20px;display:block;margin-bottom:4px}
+.mission-btn .m-title{font-size:11px;font-weight:700;color:var(--text);display:block;margin-bottom:2px}
+.mission-btn .m-sub{font-size:9px;color:var(--text2);line-height:1.4}
+.mission-btn.selected-ems{background:var(--red-bg);border-color:var(--red-bd)}
+.mission-btn.selected-transfer{background:var(--blue-bg);border-color:var(--blue-bd)}
+.mission-btn.selected-general{background:var(--amber-bg);border-color:var(--amber-bd)}
+
+/* ── 로딩 ── */
+.loading{
+  text-align:center;padding:20px;
+  font-size:12px;color:var(--text2);
+}
+.spinner{
+  display:inline-block;width:20px;height:20px;
+  border:2px solid var(--border2);border-top-color:var(--blue);
+  border-radius:50%;animation:spin .7s linear infinite;
+  vertical-align:middle;margin-right:8px;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── 인쇄 ── */
+@media print{
+  #header,#tab-bar,#modal-overlay{display:none!important}
+  .panel{display:block!important;overflow:visible!important;height:auto!important}
+  #panels{overflow:visible!important;height:auto!important}
+  body,#app{height:auto;overflow:visible}
+  .no-print{display:none!important}
+  .print-only{display:block!important}
+  .card{break-inside:avoid;border:1px solid #ccc;background:#fff;color:#000}
+  .ats-block{color:#000;background:#f8f8f8}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- 헤더 -->
+  <header id="header">
+    <div class="logo-wrap">
+      <span class="logo-icon">🚁</span>
+      <div>
+        <div class="logo-text">서울소방항공대 항공출동 관리 시스템</div>
+        <div class="logo-sub">소방청 훈령·응급의료법 기반 · 운항관리 전용</div>
+      </div>
+    </div>
+    <span class="ref-badge">FOR REFERENCE ONLY</span>
+    <span id="clock"></span>
+  </header>
+
+  <!-- 탭 바 -->
+  <div id="tab-bar">
+    <button class="tab-btn active" onclick="showTab('checklist',this)">☑️ 출동판단</button>
+    <button class="tab-btn" onclick="showTab('weather',this)">🌤 기상판단</button>
+    <button class="tab-btn" onclick="showTab('map',this)">🗺 경로·NOTAM</button>
+    <button class="tab-btn" onclick="showTab('patient',this)">🏥 환자판단</button>
+    <button class="tab-btn" onclick="showTab('maint',this)">🔧 정비현황</button>
+    <button class="tab-btn" onclick="showTab('fpl',this)">✈️ 비행계획서</button>
+    <button class="tab-btn" onclick="showTab('regs',this)">📖 관련법령</button>
+  </div>
+
+  <!-- 패널 영역 -->
+  <div id="panels">
+
+    <!-- ══ 탭 1: 출동판단 ══ -->
+    <div class="panel active" id="panel-checklist">
+      <div class="card">
+        <div class="card-title">항공기 선택</div>
+        <div class="radio-group" id="ac-group">
+          <button class="radio-btn selected" onclick="selAC('ac1',this)">AS-365N2 ① (HL9448)</button>
+          <button class="radio-btn" onclick="selAC('ac2',this)">AS-365N2 ② (HL9617)</button>
+          <button class="radio-btn" onclick="selAC('ac3',this)">AW-189 (HL9619)</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">출동 유형</div>
+        <div style="display:flex;gap:8px">
+          <div class="mission-btn selected-ems" id="mb-ems" onclick="selMission('ems')">
+            <span class="m-icon">🚨</span>
+            <span class="m-title">소방 항공구조구급</span>
+            <span class="m-sub">현장출동<br>동승: 1급 응급구조사</span>
+          </div>
+          <div class="mission-btn" id="mb-transfer" onclick="selMission('transfer')">
+            <span class="m-icon">🏥</span>
+            <span class="m-title">병원간 이송</span>
+            <span class="m-sub">응급의료법 §45<br>동승: 의사·간호사 의무</span>
+          </div>
+          <div class="mission-btn" id="mb-general" onclick="selMission('general')">
+            <span class="m-icon">🔥</span>
+            <span class="m-title">일반출동</span>
+            <span class="m-sub">인명구조·화재진압<br>동승: 항공구조대원</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="cl-card">
+        <div class="card-title">출동 체크리스트</div>
+        <div class="progress-wrap"><div class="progress-bar" id="cl-progress" style="width:0%"></div></div>
+        <div id="cl-items"></div>
+        <div class="verdict fail" id="cl-verdict" style="margin-top:12px">
+          항목을 확인해주세요
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 탭 2: 기상판단 ══ -->
+    <div class="panel" id="panel-weather">
+      <div class="card">
+        <div class="card-title">실시간 기상 조회 (기상청 공공데이터)</div>
+        <div class="grid-2" style="margin-bottom:10px">
+          <div class="field-group">
+            <div class="field-label">조회 공항</div>
+            <select id="wx-icao">
+              <option value="RKSS">RKSS — 김포</option>
+              <option value="RKSI">RKSI — 인천</option>
+              <option value="RKPC">RKPC — 제주</option>
+              <option value="RKTU">RKTU — 청주</option>
+              <option value="RKPK">RKPK — 김해</option>
+              <option value="RKNY">RKNY — 양양</option>
+              <option value="RKJK">RKJK — 군산</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:flex-end;gap:6px">
+            <button class="btn btn-primary" onclick="fetchWx()" style="flex:1">🌤 조회</button>
+            <button class="btn btn-ghost" onclick="fetchAllWx()" style="flex:1">전체</button>
+          </div>
+        </div>
+        <div id="wx-result">
+          <div style="text-align:center;padding:16px;color:var(--text3);font-size:12px">
+            조회 버튼을 눌러 기상 정보를 불러오세요.<br>
+            <span style="font-size:10px">※ API 키 활성화 후 1~2시간 소요될 수 있습니다</span>
+          </div>
+        </div>
+        <div style="margin-top:8px;font-size:10px;color:var(--text3)">
+          ※ 기상 데이터 출처: 기상청 항공기상전문 조회서비스 (공공데이터포털)<br>
+          ※ CORS 우회를 위해 Cloudflare Worker 프록시 사용
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">VFR 기상 최저치 참조</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead>
+            <tr style="background:var(--bg4)">
+              <th style="padding:7px 10px;text-align:left;color:var(--text2);font-size:10px;font-weight:600;text-transform:uppercase">구분</th>
+              <th style="padding:7px 10px;text-align:center;color:var(--text2);font-size:10px;font-weight:600">시정</th>
+              <th style="padding:7px 10px;text-align:center;color:var(--text2);font-size:10px;font-weight:600">운고</th>
+              <th style="padding:7px 10px;text-align:center;color:var(--text2);font-size:10px;font-weight:600">풍속</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style="padding:7px 10px;border-top:1px solid var(--border)">주간</td><td style="padding:7px 10px;border-top:1px solid var(--border);text-align:center;color:var(--cyan)">1,600m</td><td style="padding:7px 10px;border-top:1px solid var(--border);text-align:center;color:var(--cyan)">300ft</td><td style="padding:7px 10px;border-top:1px solid var(--border);text-align:center;color:var(--cyan)">25kt</td></tr>
+            <tr><td style="padding:7px 10px;border-top:1px solid var(--border)">야간</td><td style="padding:7px 10px;border-top:1px solid var(--border);text-align:center;color:var(--amber)">3,200m</td><td style="padding:7px 10px;border-top:1px solid var(--border);text-align:center;color:var(--amber)">500ft</td><td style="padding:7px 10px;border-top:1px solid var(--border);text-align:center;color:var(--amber)">20kt</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">SIGMET / AIRMET</div>
+        <div class="btn-row" style="margin-top:0;margin-bottom:10px">
+          <button class="btn btn-ghost" onclick="fetchSigmet()">⚠️ SIGMET 조회</button>
+          <button class="btn btn-ghost" onclick="fetchAirmet()">⚠️ AIRMET 조회</button>
+        </div>
+        <div id="sigairmet-result" style="font-size:11px;color:var(--text2)">조회 버튼을 누르세요.</div>
+      </div>
+    </div>
+
+    <!-- ══ 탭 3: 경로·NOTAM ══ -->
+    <div class="panel" id="panel-map">
+      <div class="card">
+        <div class="card-title">비행경로 설정</div>
+        <div style="background:var(--blue-bg);border:1px solid var(--blue-bd);border-radius:var(--radius);padding:9px 12px;margin-bottom:12px;font-size:11px;color:var(--blue)">
+          ✈️ 비행계획서 탭의 출도착지를 작성하면 자동 반영됩니다.
+          <button class="btn btn-primary" style="padding:4px 10px;font-size:10px;margin-left:8px" onclick="syncFromFPL()">불러오기</button>
+        </div>
+        <div class="grid-2">
+          <div class="field-group">
+            <div class="field-label">출발지</div>
+            <select id="map-dep">
+              <option value="">— 선택 —</option>
+              <optgroup label="서울소방 인계점">
+                <option value="37.5505,127.1035,광나루항공대(기지)">광나루항공대 (기지)</option>
+                <option value="37.5800,127.0850,중랑천 헬기장">중랑천 헬기장</option>
+                <option value="37.5218,127.0878,잠실 헬기장">잠실 헬기장</option>
+                <option value="37.5183,126.9342,노들섬 헬기장">노들섬 헬기장</option>
+                <option value="37.6015,126.8677,수색비행장(RKRS)">수색비행장 (RKRS)</option>
+                <option value="37.4922,126.9186,보라매공원 헬기장">보라매공원 헬기장</option>
+                <option value="37.4696,127.0480,양재 만남의광장">양재 만남의광장</option>
+              </optgroup>
+              <optgroup label="병원 헬리패드">
+                <option value="37.5796,126.9998,서울대병원">서울대병원</option>
+                <option value="37.5623,126.9408,세브란스병원">세브란스병원</option>
+                <option value="37.4881,127.0855,삼성서울병원">삼성서울병원</option>
+                <option value="37.5268,127.1086,서울아산병원">서울아산병원</option>
+                <option value="37.5571,127.0449,한양대병원">한양대병원</option>
+              </optgroup>
+              <optgroup label="공항">
+                <option value="37.5583,126.7906,김포공항(RKSS)">김포공항 (RKSS)</option>
+                <option value="37.4692,126.4505,인천공항(RKSI)">인천공항 (RKSI)</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="field-group">
+            <div class="field-label">도착지</div>
+            <select id="map-arr">
+              <option value="">— 선택 —</option>
+              <optgroup label="서울소방 인계점">
+                <option value="37.5505,127.1035,광나루항공대(기지)">광나루항공대 (기지)</option>
+                <option value="37.5800,127.0850,중랑천 헬기장">중랑천 헬기장</option>
+                <option value="37.5218,127.0878,잠실 헬기장">잠실 헬기장</option>
+                <option value="37.5183,126.9342,노들섬 헬기장">노들섬 헬기장</option>
+                <option value="37.6015,126.8677,수색비행장(RKRS)">수색비행장 (RKRS)</option>
+                <option value="37.4922,126.9186,보라매공원 헬기장">보라매공원 헬기장</option>
+                <option value="37.4696,127.0480,양재 만남의광장">양재 만남의광장</option>
+              </optgroup>
+              <optgroup label="병원 헬리패드">
+                <option value="37.5796,126.9998,서울대병원">서울대병원</option>
+                <option value="37.5623,126.9408,세브란스병원">세브란스병원</option>
+                <option value="37.4881,127.0855,삼성서울병원">삼성서울병원</option>
+                <option value="37.5268,127.1086,서울아산병원">서울아산병원</option>
+                <option value="37.5571,127.0449,한양대병원">한양대병원</option>
+              </optgroup>
+              <optgroup label="공항">
+                <option value="37.5583,126.7906,김포공항(RKSS)">김포공항 (RKSS)</option>
+                <option value="37.4692,126.4505,인천공항(RKSI)">인천공항 (RKSI)</option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="showMap()">🗺 항공정보도 지도 열기</button>
+          <button class="btn btn-ghost" onclick="calcRoute()">📐 거리 계산</button>
+        </div>
+        <div id="route-info" style="display:none;margin-top:10px;padding:10px 12px;background:var(--bg3);border-radius:var(--radius);font-size:12px;line-height:1.8"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">NOTAM 분석</div>
+        <textarea id="notam-input" placeholder="NOTAM 원문을 붙여넣으세요...&#10;예) NOTAMN A1234/26&#10;Q) RKRR/QRTCA/...&#10;E) RESTRICTED AREA ACT..." style="min-height:100px"></textarea>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="analyzeNotam()">🔍 분석</button>
+          <button class="btn btn-ghost" onclick="document.getElementById('notam-input').value='';document.getElementById('notam-result').innerHTML=''">↺ 초기화</button>
+        </div>
+        <div id="notam-result" style="margin-top:10px"></div>
+      </div>
+    </div>
+
+    <!-- ══ 탭 4: 환자판단 ══ -->
+    <div class="panel" id="panel-patient">
+      <div class="card">
+        <div class="card-title">환자 정보 입력</div>
+        <div class="grid-2">
+          <div class="field-group">
+            <div class="field-label">SpO₂ (%)</div>
+            <input type="number" id="pt-spo2" placeholder="예: 94" min="0" max="100" class="mono-input">
+          </div>
+          <div class="field-group">
+            <div class="field-label">혈압 수축기 (mmHg)</div>
+            <input type="number" id="pt-sbp" placeholder="예: 90" class="mono-input">
+          </div>
+          <div class="field-group">
+            <div class="field-label">맥박 (회/분)</div>
+            <input type="number" id="pt-hr" placeholder="예: 110" class="mono-input">
+          </div>
+          <div class="field-group">
+            <div class="field-label">GCS (합계 3~15)</div>
+            <input type="number" id="pt-gcs" placeholder="예: 12" min="3" max="15" class="mono-input">
+          </div>
+        </div>
+        <div class="field-label" style="margin-bottom:8px">특이사항</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <label class="check-item" style="background:var(--bg3);border-radius:var(--radius)">
+            <input type="checkbox" id="pt-vent"> <span class="check-text">인공호흡기 사용 중</span>
+          </label>
+          <label class="check-item" style="background:var(--bg3);border-radius:var(--radius)">
+            <input type="checkbox" id="pt-cardiac"> <span class="check-text">심정지 / CPR 중</span>
+          </label>
+          <label class="check-item" style="background:var(--bg3);border-radius:var(--radius)">
+            <input type="checkbox" id="pt-trauma"> <span class="check-text">다발 외상</span>
+          </label>
+          <label class="check-item" style="background:var(--bg3);border-radius:var(--radius)">
+            <input type="checkbox" id="pt-gas"> <span class="check-text">안내 가스 잔류 (SF₆ 등)</span>
+          </label>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="assessPatient()">📋 이송 적합성 판정</button>
+        </div>
+      </div>
+      <div class="card" id="pt-result-card" style="display:none">
+        <div class="card-title">판정 결과</div>
+        <div id="pt-verdict" class="verdict" style="margin-top:0"></div>
+        <div id="pt-issues" style="margin-top:10px;font-size:12px;line-height:1.8;color:var(--text2)"></div>
+      </div>
+    </div>
+
+    <!-- ══ 탭 5: 정비현황 ══ -->
+    <div class="panel" id="panel-maint">
+      <div class="summary-grid" id="maint-summary"></div>
+
+      <div class="card">
+        <div class="card-title">항공기 선택</div>
+        <div class="radio-group" id="maint-ac-group">
+          <button class="radio-btn selected" onclick="selMaintAC('ac1',this)">AS-365N2 ①</button>
+          <button class="radio-btn" onclick="selMaintAC('ac2',this)">AS-365N2 ②</button>
+          <button class="radio-btn" onclick="selMaintAC('ac3',this)">AW-189</button>
+        </div>
+        <button class="btn btn-primary" onclick="openMaintModal()">+ 정비 항목 추가</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">정비 이력</div>
+        <div id="maint-list"></div>
+      </div>
+    </div>
+
+    <!-- ══ 탭 6: 비행계획서 ══ -->
+    <div class="panel" id="panel-fpl">
+      <div style="background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:var(--radius);padding:8px 12px;margin-bottom:12px;font-size:11px;color:var(--amber)">
+        ⚠️ FOR REFERENCE ONLY — ATC 실제 제출은 공식 채널(AMS)을 통해 별도 진행하세요.
+      </div>
+
+      <div class="card">
+        <div class="card-title">기본 정보 (AMS 양식)</div>
+        <div class="grid-2">
+          <div class="field-group">
+            <div class="field-label">7. 콜사인 (Aircraft ID)</div>
+            <input id="fp-callsign" class="mono-input" placeholder="FIREPOLICE002">
+          </div>
+          <div class="field-group">
+            <div class="field-label">등록부호 (REG)</div>
+            <input id="fp-reg" class="mono-input" placeholder="HL9448">
+          </div>
+          <div class="field-group">
+            <div class="field-label">8. 비행규칙</div>
+            <select id="fp-rule">
+              <option value="VG">VG — 특별시계 (소방헬기 기본)</option>
+              <option value="V">V — 시계비행</option>
+              <option value="I">I — 계기비행</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <div class="field-label">임무 (Purpose)</div>
+            <select id="fp-mission-type">
+              <option value="EMS FLT">EMS FLT — 항공구조구급</option>
+              <option value="SAR FLT">SAR FLT — 수색구조</option>
+              <option value="TRANSFER FLT">TRANSFER FLT — 병원간 이송</option>
+              <option value="FIRE FLT">FIRE FLT — 화재진압</option>
+              <option value="TRAINING FLT">TRAINING FLT — 훈련</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <div class="field-label">13. 출발지 (ADEP)</div>
+            <input id="fp-dep" class="mono-input" placeholder="RKSS" maxlength="40">
+          </div>
+          <div class="field-group">
+            <div class="field-label">출발 시각 (UTC HHMM)</div>
+            <input id="fp-etd" class="mono-input" placeholder="0910" maxlength="4">
+          </div>
+          <div class="field-group">
+            <div class="field-label">15. 속도</div>
+            <input id="fp-spd" class="mono-input" placeholder="N0120" maxlength="7">
+          </div>
+          <div class="field-group">
+            <div class="field-label">고도 (Level)</div>
+            <input id="fp-alt" class="mono-input" placeholder="VFR" maxlength="7">
+          </div>
+          <div class="field-group">
+            <div class="field-label">16. 도착지 (ADES)</div>
+            <input id="fp-arr" class="mono-input" placeholder="RKSS" maxlength="40">
+          </div>
+          <div class="field-group">
+            <div class="field-label">총 비행시간 (EET)</div>
+            <input id="fp-eet" class="mono-input" placeholder="0100" maxlength="4">
+          </div>
+          <div class="field-group">
+            <div class="field-label">교체 비행장 (ALTN)</div>
+            <input id="fp-altn" class="mono-input" placeholder="RKSS" maxlength="4">
+          </div>
+          <div class="field-group">
+            <div class="field-label">탑승자 수 (P/)</div>
+            <input id="fp-pax" class="mono-input" placeholder="006" maxlength="3">
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field-label">Route (경로)</div>
+          <textarea id="fp-route" class="mono-input" placeholder="DCT JANGHEUNG DCT OBONGSAN DCT UIJUNGBU DCT RKSS/TER" style="min-height:54px"></textarea>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">소방 특화 / Item 19</div>
+        <div class="grid-2">
+          <div class="field-group">
+            <div class="field-label">P-518 허가 코드</div>
+            <input id="fp-p518" class="mono-input" placeholder="RKRR-2026-0001">
+          </div>
+          <div class="field-group">
+            <div class="field-label">SSR / Squawk Code</div>
+            <input id="fp-ssr" class="mono-input" placeholder="2000" maxlength="4" oninput="this.value=this.value.replace(/[^0-7]/g,'').slice(0,4)">
+          </div>
+          <div class="field-group">
+            <div class="field-label">E/ 탑재 연료 시간</div>
+            <input id="fp-endurance" class="mono-input" placeholder="0330" maxlength="4">
+          </div>
+          <div class="field-group">
+            <div class="field-label">기체 색상 (A/)</div>
+            <input id="fp-color" class="mono-input" placeholder="RED AND WHITE">
+          </div>
+          <div class="field-group">
+            <div class="field-label">기장 (C/ PIC)</div>
+            <input id="fp-pic" placeholder="홍길동">
+          </div>
+          <div class="field-group">
+            <div class="field-label">운항관리사 (Dispatcher)</div>
+            <input id="fp-disp" placeholder="김능일">
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field-label" style="color:var(--amber)">⚠️ 운항관리사 주의사항 (Dispatcher Remarks)</div>
+          <textarea id="fp-disp-rmk" placeholder="기상 특이사항, 공역 주의사항, 기장 전달사항을 입력하세요..." style="border-color:var(--amber-bd);background:var(--amber-bg);color:var(--text)"></textarea>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">18. 기상 확인</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer">
+            <input type="checkbox" id="fp-wx-dep" style="width:auto;accent-color:var(--blue)"> 출발지 기상
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer">
+            <input type="checkbox" id="fp-wx-enr" style="width:auto;accent-color:var(--blue)"> 경유지 기상
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer">
+            <input type="checkbox" id="fp-wx-arr" style="width:auto;accent-color:var(--blue)"> 도착지 기상
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer">
+            <input type="checkbox" id="fp-notam-ck" style="width:auto;accent-color:var(--blue)"> NOTAM and Weather checked by pilot
+          </label>
+        </div>
+        <div style="font-size:10px;color:var(--text3)">기상 체크 후 NOTAM 체크하면 Other Information에 자동 반영됩니다.</div>
+      </div>
+
+      <div class="btn-row no-print">
+        <button class="btn btn-primary" onclick="buildATS()">📋 GIA 전문 생성</button>
+        <button class="btn btn-ghost" onclick="fetchWxForFPL()">🌤 기상 조회 + OFP</button>
+        <button class="btn btn-ghost" onclick="printOFP()">🖨️ 인쇄 / PDF</button>
+        <button class="btn btn-ghost" onclick="resetFPL()">↺ 초기화</button>
+      </div>
+
+      <div class="card" id="ats-card" style="display:none">
+        <div class="card-title">ATS Plan (GIA 전문)</div>
+        <div class="ats-block" id="ats-text"></div>
+        <div class="btn-row no-print">
+          <button class="btn btn-ghost" onclick="copyATS()">📋 클립보드 복사</button>
+        </div>
+      </div>
+
+      <div id="ofp-area"></div>
+    </div>
+
+    <!-- ══ 탭 7: 관련 법령 ══ -->
+    <div class="panel" id="panel-regs">
+      <div style="background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:var(--radius);padding:8px 12px;margin-bottom:12px;font-size:11px;color:var(--amber)">
+        ⚠️ 법령 링크 클릭 시 주소가 클립보드에 복사됩니다. Safari 주소창에 붙여넣기하여 접속하세요.
+      </div>
+      <div id="law-list"></div>
+    </div>
+
+  </div><!-- /panels -->
+</div><!-- /app -->
+
+<!-- 정비현황 모달 -->
+<div id="modal-overlay">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="modal-title-text">정비 항목 추가</span>
+      <button class="modal-close" onclick="closeMaintModal()">✕</button>
+    </div>
+
+    <input type="hidden" id="maint-edit-id">
+
+    <div class="field-group">
+      <div class="field-label">정비 구분</div>
+      <select id="m-type" onchange="toggleMelFields()">
+        <option value="scheduled">정기 정비 (Scheduled)</option>
+        <option value="unscheduled">비정기 정비 (Unscheduled)</option>
+        <option value="mel">MEL 적용</option>
+        <option value="cdl">CDL 적용</option>
+        <option value="inspection">점검 (Inspection)</option>
+        <option value="aog">AOG (Aircraft on Ground)</option>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">출동 가능 여부</div>
+      <select id="m-status">
+        <option value="available">✅ 출동 가능</option>
+        <option value="mel_ok">⚠️ 조건부 가능 (MEL/CDL)</option>
+        <option value="unavailable">❌ 출동 불가</option>
+        <option value="aog">🔴 AOG</option>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">정비 내용</div>
+      <textarea id="m-desc" placeholder="결함 또는 정비 내용을 입력하세요..."></textarea>
+    </div>
+
+    <div id="mel-fields" style="display:none;background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:var(--radius);padding:12px;margin-bottom:10px">
+      <div style="font-size:11px;font-weight:700;color:var(--amber);margin-bottom:8px">⚠️ MEL/CDL 정보</div>
+      <div class="grid-2">
+        <div class="field-group">
+          <div class="field-label">MEL/CDL 번호</div>
+          <input id="m-mel-num" class="mono-input" placeholder="예: 33-11-01">
+        </div>
+        <div class="field-group">
+          <div class="field-label">Category</div>
+          <select id="m-mel-cat">
+            <option value="A">A — 즉시 (당일)</option>
+            <option value="B" selected>B — 3일</option>
+            <option value="C">C — 10일</option>
+            <option value="D">D — 120일</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">운항/성능 제한사항</div>
+        <textarea id="m-mel-limit" placeholder="야간비행 불가 / MTOW 감소 등..." style="min-height:48px"></textarea>
+      </div>
+      <div class="field-group">
+        <div class="field-label">O/M (조종사 조치사항)</div>
+        <textarea id="m-mel-om" placeholder="이륙 전 확인 사항 등..." style="min-height:48px"></textarea>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="field-group">
+        <div class="field-label">시작 일시</div>
+        <input id="m-start" type="datetime-local">
+      </div>
+      <div class="field-group">
+        <div class="field-label">완료 예정</div>
+        <input id="m-end" type="datetime-local">
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">담당 정비사</div>
+      <input id="m-tech" placeholder="성명 또는 면장번호">
+    </div>
+    <div class="field-group">
+      <div class="field-label">비고</div>
+      <input id="m-note" placeholder="">
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveMaintItem()">💾 저장</button>
+      <button class="btn btn-ghost" onclick="closeMaintModal()">취소</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════
+   설정 & 상수
+════════════════════════════════════════════════ */
+// Cloudflare Worker URL — 배포 후 실제 주소로 변경
+const WORKER_URL = 'https://kma-aviation-proxy.YOUR_ID.workers.dev';
+// ↑ Cloudflare Workers 배포 후 이 주소를 변경해야 합니다
+
+const VWORLD_KEY = 'FFA725B5-718F-3886-9BD6-9017CE09A989';
+
+const AIRCRAFT = {
+  ac1: {name:'AS-365N2 ①', reg:'HL9448'},
+  ac2: {name:'AS-365N2 ②', reg:'HL9617'},
+  ac3: {name:'AW-189',      reg:'HL9619'},
+};
+
+const AIRPORTS = {
+  RKSS:'김포',RKSI:'인천',RKPC:'제주',RKTU:'청주',
+  RKPK:'김해',RKNY:'양양',RKJK:'군산',
+};
+
+const LAWS = [
+  {name:'119구조·구급에 관한 법률', url:'https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=253949', desc:'§12 119항공대 편성 / §14 구급대 운영 | 시행 2025.6.4'},
+  {name:'119항공대 운영 규정', url:'https://www.law.go.kr/LSW/admRulLsInfoP.do?admRulSeq=2100000262842', desc:'소방청훈령 제435호 | 기상최저치·출동절차·운항관리사 임무'},
+  {name:'119종합상황실 운영 규정', url:'https://www.law.go.kr/LSW/admRulLsInfoP.do?admRulSeq=2100000222608', desc:'소방청예규 제82호 | 항공출동 요청 채널·상황관제'},
+  {name:'응급의료에 관한 법률', url:'https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=211941', desc:'§11 이송 / §45 병원간 전원 / §48 구급대원'},
+  {name:'항공안전법', url:'https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=258789', desc:'§62 기장 고유 권한 / §77 기상 최저치'},
+  {name:'항공안전법 시행규칙', url:'https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=285505', desc:'§175 기상최저치 / §199 헬리콥터 운용'},
+  {name:'의료법', url:'https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=267397', desc:'§2 의료인 정의 / §27 무면허의료행위 금지 | 시행 2025.12.21'},
+  {name:'119구급대원 현장응급처치 표준지침', url:'https://www.law.go.kr/LSW/admRulLsInfoP.do?admRulSeq=2100000269696', desc:'이송 적응증 / 중증도 분류(START/SALT)'},
+  {name:'AIS Korea — NOTAM·AIP', url:'https://atis.casa.go.kr', desc:'공식 NOTAM 조회 / AIP / 공역도 — 비행 전 필수 확인'},
+  {name:'소방청 공개행정 (훈령·예규)', url:'https://www.nfa.go.kr/nfa/releaseinformation/publicopinion/officiallist/', desc:'소방청 최신 훈령·예규 전체 목록'},
+];
+
+/* ════════════════════════════════════════════════
+   앱 상태
+════════════════════════════════════════════════ */
+let curMission = 'ems';
+let curAC = 'ac1';
+let curMaintAC = 'ac1';
+let clVars = {};
+let atsText = '';
+
+/* ════════════════════════════════════════════════
+   초기화
+════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  updateClock();
+  setInterval(updateClock, 1000);
+  renderChecklist();
+  renderMaintSummary();
+  renderMaintList();
+  renderLaws();
+});
+
+/* ── 시계 ── */
+function updateClock() {
+  const n = new Date();
+  const kst = n.toLocaleString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).replace(/\. /g,'.').replace('.',':').replace('.',':');
+  const utc = n.toUTCString().slice(17,22);
+  document.getElementById('clock').textContent = `KST ${n.getFullYear()}.${String(n.getMonth()+1).padStart(2,'0')}.${String(n.getDate()).padStart(2,'0')} ${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')} | UTC ${utc}`;
+}
+
+/* ── 탭 전환 ── */
+function showTab(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* ════════════════════════════════════════════════
+   출동판단
+════════════════════════════════════════════════ */
+function selAC(id, btn) {
+  curAC = id;
+  document.querySelectorAll('#ac-group .radio-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function selMission(type) {
+  curMission = type;
+  ['ems','transfer','general'].forEach(t => {
+    const el = document.getElementById('mb-'+t);
+    el.className = 'mission-btn' + (t === type ? ' selected-'+t : '');
+  });
+  renderChecklist();
+}
+
+const CL_DATA = {
+  ems: [
+    {tag:'차단',color:'#ef4444',text:'기상 최저치 확인 (주간: 시정1600m/운고300ft/풍속25kt | 야간: 3200m/500ft/20kt)'},
+    {tag:'차단',color:'#ef4444',text:'항공기 감항성 확인 (정비 불가 상태 아님)'},
+    {tag:'차단',color:'#ef4444',text:'현장 착륙장(LZ) 확보 가능 여부'},
+    {tag:'운항',color:'#3b82f6',text:'현장 비행 거리 및 연료 잔량 확인'},
+    {tag:'운항',color:'#3b82f6',text:'기상 실황 확인 (NOTAM·공항기상·현장 교신)'},
+    {tag:'운항',color:'#3b82f6',text:'비행경로 공역 제한 확인 (P/R/D 구역·NOTAM)'},
+    {tag:'운항',color:'#3b82f6',text:'기장 비행 가능 상태 확인 (피로도·비행시간)'},
+    {tag:'법적',color:'#22c55e',text:'1급 응급구조사(구급대원) 동승 확인 (119구조구급법 §14) — 의사 동승 의무 없음'},
+    {tag:'법적',color:'#22c55e',text:'수용 의료기관 사전 확인 (응급의료법 §11)'},
+    {tag:'법적',color:'#22c55e',text:'기장 최종 출동 가능 선언 (항공안전법 §62)'},
+  ],
+  transfer: [
+    {tag:'차단',color:'#ef4444',text:'기상 최저치 확인'},
+    {tag:'차단',color:'#ef4444',text:'항공기 감항성 확인'},
+    {tag:'차단',color:'#ef4444',text:'수용 병원 수용 의사 확인 (응급의료법 §11)'},
+    {tag:'차단',color:'#ef4444',text:'의사 또는 간호사 동승 확인 (응급의료법 §45) — 법적 의무'},
+    {tag:'운항',color:'#3b82f6',text:'목적 병원 헬리패드 가용 여부 (야간 조명 포함)'},
+    {tag:'운항',color:'#3b82f6',text:'기내 의료장비 전원 확인 (인공호흡기 시 AW-189 우선)'},
+    {tag:'운항',color:'#3b82f6',text:'안내 가스(SF₆·C₃F₈) 잔류 여부 — 잔류 시 비행 절대 금기'},
+    {tag:'법적',color:'#22c55e',text:'전원 의뢰 의료기관 공식 요청 채널 확인 (응급의료법 §45)'},
+    {tag:'법적',color:'#22c55e',text:'이송 의뢰서·이송확인서 준비 (응급의료법 시행규칙 §38)'},
+    {tag:'법적',color:'#22c55e',text:'기장 최종 출동 가능 선언 (항공안전법 §62)'},
+  ],
+  general: [
+    {tag:'차단',color:'#ef4444',text:'기상 최저치 확인'},
+    {tag:'차단',color:'#ef4444',text:'항공기 감항성 확인'},
+    {tag:'차단',color:'#ef4444',text:'현장 안전 확보 가능 여부 (2차 사고 위험)'},
+    {tag:'운항',color:'#3b82f6',text:'비행 거리·연료 잔량 확인'},
+    {tag:'운항',color:'#3b82f6',text:'NOTAM·공역 제한 확인'},
+    {tag:'운항',color:'#3b82f6',text:'임무 장비 탑재 확인 (구조 호이스트·야간투시경 등)'},
+    {tag:'법적',color:'#22c55e',text:'항공구조대원 동승 확인 (119구조구급법 §6)'},
+    {tag:'법적',color:'#22c55e',text:'관계 기관 협조 확인 (경찰·해경·산림청 등)'},
+    {tag:'법적',color:'#22c55e',text:'기장 최종 출동 가능 선언 (항공안전법 §62)'},
+  ],
+};
+
+function renderChecklist() {
+  const items = CL_DATA[curMission] || [];
+  clVars = {};
+  const el = document.getElementById('cl-items');
+  el.innerHTML = items.map((item,i) => `
+    <label class="check-item">
+      <input type="checkbox" id="cl-${i}" onchange="updateVerdict()">
+      <span class="check-text">
+        <span class="check-tag" style="background:${item.color}22;color:${item.color};border:1px solid ${item.color}44">${item.tag}</span>
+        ${item.text}
+      </span>
+    </label>`).join('');
+  updateVerdict();
+}
+
+function updateVerdict() {
+  const items = CL_DATA[curMission] || [];
+  const total = items.length;
+  const checked = items.filter((_,i) => document.getElementById('cl-'+i)?.checked).length;
+  const pct = total ? Math.round(checked/total*100) : 0;
+  
+  document.getElementById('cl-progress').style.width = pct + '%';
+  
+  const v = document.getElementById('cl-verdict');
+  if (pct === 100) {
+    v.className = 'verdict ok'; v.textContent = '✅ 출동 가능';
+  } else if (pct >= 60) {
+    v.className = 'verdict warn'; v.textContent = `⚠️ 확인 중 (${checked}/${total})`;
+  } else {
+    v.className = 'verdict fail'; v.textContent = `❌ 미확인 항목 있음 (${checked}/${total})`;
+  }
+}
+
+/* ════════════════════════════════════════════════
+   기상 조회 (Cloudflare Worker 프록시)
+════════════════════════════════════════════════ */
+async function kmaFetch(endpoint, icao='') {
+  try {
+    let url = `${WORKER_URL}?endpoint=${endpoint}`;
+    if (icao) url += `&icao=${icao}`;
+    const r = await fetch(url, {signal: AbortSignal.timeout(10000)});
+    if (!r.ok) return null;
+    return await r.json();
+  } catch(e) {
+    return null;
+  }
+}
+
+function parseMetar(data) {
+  try {
+    const items = data?.response?.body?.items?.item;
+    if (!items) return null;
+    const item = Array.isArray(items) ? items[0] : items;
+    return item?.metarMsg || null;
+  } catch { return null; }
+}
+function parseTaf(data) {
+  try {
+    const items = data?.response?.body?.items?.item;
+    if (!items) return null;
+    const item = Array.isArray(items) ? items[0] : items;
+    return item?.tafMsg || null;
+  } catch { return null; }
+}
+function parseSigairmet(data, key) {
+  try {
+    const items = data?.response?.body?.items?.item;
+    if (!items) return [];
+    const arr = Array.isArray(items) ? items : [items];
+    return arr.map(i => i?.[key]).filter(Boolean);
+  } catch { return []; }
+}
+
+function wxResultHtml(icao, metar, taf) {
+  const airportName = AIRPORTS[icao] || icao;
+  const noData = '<span style="color:var(--text3)">— 데이터 없음 (API 활성화 대기 또는 미연결) —</span>';
+  return `
+    <div class="wx-station">📡 ${icao} — ${airportName}</div>
+    <div class="wx-label">METAR</div>
+    <div class="wx-block">${metar || noData}</div>
+    <div class="wx-label">TAF</div>
+    <div class="wx-block">${taf || noData}</div>
+  `;
+}
+
+async function fetchWx() {
+  const icao = document.getElementById('wx-icao').value;
+  const el = document.getElementById('wx-result');
+  el.innerHTML = `<div class="loading"><span class="spinner"></span>기상 조회 중...</div>`;
+  
+  const [metarData, tafData] = await Promise.all([
+    kmaFetch('getMetar', icao),
+    kmaFetch('getTaf', icao),
+  ]);
+  
+  const metar = parseMetar(metarData);
+  const taf   = parseTaf(tafData);
+  el.innerHTML = wxResultHtml(icao, metar, taf);
+  el.innerHTML += `<div style="font-size:10px;color:var(--text3);margin-top:6px">조회: ${new Date().toUTCString().slice(5,25)} UTC</div>`;
+}
+
+async function fetchAllWx() {
+  const el = document.getElementById('wx-result');
+  el.innerHTML = `<div class="loading"><span class="spinner"></span>주요 공항 기상 조회 중...</div>`;
+  
+  const icaos = ['RKSS','RKSI','RKPC','RKTU'];
+  const results = await Promise.all(icaos.map(async ic => {
+    const [m, t] = await Promise.all([kmaFetch('getMetar',ic), kmaFetch('getTaf',ic)]);
+    return {ic, metar: parseMetar(m), taf: parseTaf(t)};
+  }));
+  
+  el.innerHTML = results.map(r => wxResultHtml(r.ic, r.metar, r.taf)).join('<hr style="border-color:var(--border);margin:10px 0">');
+}
+
+async function fetchSigmet() {
+  const el = document.getElementById('sigairmet-result');
+  el.innerHTML = `<div class="loading"><span class="spinner"></span>SIGMET 조회 중...</div>`;
+  const data = await kmaFetch('getSigmet');
+  const msgs = parseSigairmet(data, 'sigmetMsg');
+  el.innerHTML = msgs.length
+    ? msgs.map(m => `<div class="wx-block" style="color:var(--red)">${m}</div>`).join('')
+    : '<span style="color:var(--text3)">현재 발효 중인 SIGMET 없음</span>';
+}
+
+async function fetchAirmet() {
+  const el = document.getElementById('sigairmet-result');
+  el.innerHTML = `<div class="loading"><span class="spinner"></span>AIRMET 조회 중...</div>`;
+  const data = await kmaFetch('getAirmet');
+  const msgs = parseSigairmet(data, 'airmetMsg');
+  el.innerHTML = msgs.length
+    ? msgs.map(m => `<div class="wx-block" style="color:var(--amber)">${m}</div>`).join('')
+    : '<span style="color:var(--text3)">현재 발효 중인 AIRMET 없음</span>';
+}
+
+/* ════════════════════════════════════════════════
+   경로·NOTAM 지도
+════════════════════════════════════════════════ */
+function syncFromFPL() {
+  const dep = document.getElementById('fp-dep').value.trim();
+  const arr = document.getElementById('fp-arr').value.trim();
+  // 비ICAO 장소는 드롭다운에서 선택
+  document.getElementById('route-info').style.display = 'block';
+  document.getElementById('route-info').innerHTML = `
+    <strong>비행계획서 경로 반영</strong><br>
+    출발: <strong>${dep||'—'}</strong> → 도착: <strong>${arr||'—'}</strong><br>
+    <span style="font-size:10px;color:var(--text3)">경로·NOTAM 탭 드롭다운에서 정확한 위치를 선택하세요.</span>
+  `;
+}
+
+function calcRoute() {
+  const depVal = document.getElementById('map-dep').value;
+  const arrVal = document.getElementById('map-arr').value;
+  if (!depVal || !arrVal) { alert('출발지와 도착지를 선택해주세요.'); return; }
+  
+  const [depLat,depLng,depName] = depVal.split(',');
+  const [arrLat,arrLng,arrName] = arrVal.split(',');
+  
+  const R = 6371;
+  const dLat = (arrLat-depLat)*Math.PI/180;
+  const dLng = (arrLng-depLng)*Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(depLat*Math.PI/180)*Math.cos(arrLat*Math.PI/180)*Math.sin(dLng/2)**2;
+  const distKm = R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+  const distNm = distKm*0.539957;
+  const as365min = Math.round(distKm/4.23);
+  const aw189min = Math.round(distKm/5.17);
+  
+  const el = document.getElementById('route-info');
+  el.style.display = 'block';
+  el.innerHTML = `
+    <strong>${depName}</strong> → <strong>${arrName}</strong><br>
+    직선거리: <strong>${distKm.toFixed(1)}km (${distNm.toFixed(1)}NM)</strong><br>
+    예상 비행시간: AS-365N2 <strong>약 ${as365min}분</strong> / AW-189 <strong>약 ${aw189min}분</strong><br>
+    <span style="font-size:10px;color:var(--text3)">※ 순항속도 기준 (AS-365N2: 254km/h / AW-189: 311km/h)</span>
+  `;
+}
+
+function showMap() {
+  const depVal = document.getElementById('map-dep').value;
+  const arrVal = document.getElementById('map-arr').value;
+  
+  let lat = 37.545, lng = 127.04, zoom = 11;
+  if (depVal) {
+    const parts = depVal.split(',');
+    lat = parseFloat(parts[0]); lng = parseFloat(parts[1]);
+  }
+  
+  // VWorld 항공정보도 지도 URL 생성
+  const mapUrl = `https://map.vworld.kr/map/maps.do?` +
+    `basemap=GRAY&` +
+    `service=demo&` +
+    `lat=${lat}&lon=${lng}&zoom=${zoom}`;
+  
+  // 지도를 새 탭으로 열기 시도
+  const openUrl = `https://www.vworld.kr/v4po_wmsView.do?` +
+    `wmtsKey=${VWORLD_KEY}&` +
+    `lat=${lat}&lon=${lng}&zoom=${zoom}`;
+  
+  // Safari에서는 window.open 제한 → 클립보드 복사
+  const mapLink = `https://map.vworld.kr/map/maps.do#` +
+    `lat=${lat}&lon=${lng}&zoom=${zoom}`;
+  
+  if(navigator.clipboard) {
+    navigator.clipboard.writeText(mapLink).then(() => {
+      alert('📋 VWorld 지도 주소가 클립보드에 복사되었습니다.\n\nSafari 주소창에 붙여넣기하여 접속하세요.\n\n' + mapLink);
+    });
+  } else {
+    alert('VWorld 지도 주소:\n\n' + mapLink + '\n\nSafari 주소창에 직접 입력하세요.');
+  }
+}
+
+function analyzeNotam() {
+  const raw = document.getElementById('notam-input').value.trim();
+  if (!raw) { alert('NOTAM 원문을 입력해주세요.'); return; }
+  
+  const RULES = [
+    {re:/HELIOPS?\s+(PROHIB|NOT\s+PERMITTED)/i, lv:'high', label:'❌ 헬기 운항 금지'},
+    {re:/PROHIBITED|RESTRICTED\s+AREA\s+ACT/i,  lv:'high', label:'❌ 비행금지·제한구역 활성화'},
+    {re:/AERODROME|AD\s+CLSD/i,                  lv:'high', label:'❌ 공항 폐쇄'},
+    {re:/DANGER\s+AREA\s+ACT/i,                  lv:'med',  label:'⚠️ 위험구역 활성화'},
+    {re:/LASER/i,                                 lv:'med',  label:'⚠️ 레이저 운용'},
+    {re:/CRANE|OBSTACLE/i,                        lv:'med',  label:'⚠️ 장애물 신설'},
+    {re:/GPS\s+RAIM/i,                            lv:'med',  label:'⚠️ GPS RAIM 장애'},
+    {re:/ILS|VOR|NDB|DME/i,                       lv:'med',  label:'⚠️ 항행시설 장애'},
+    {re:/UAV|UAS|DRONE/i,                         lv:'med',  label:'⚠️ 무인기 운용'},
+    {re:/RWY\s*\d*\s*CLSD|RUNWAY.*CLSD/i,        lv:'low',  label:'ℹ️ 활주로 폐쇄'},
+    {re:/FUEL\s+NOT\s+AVAIL/i,                    lv:'med',  label:'⚠️ 급유 불가'},
+  ];
+  
+  const findings = RULES.filter(r => r.re.test(raw));
+  const high = findings.filter(f=>f.lv==='high');
+  const med  = findings.filter(f=>f.lv==='med');
+  
+  let html = `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">`;
+  if (high.length) html += `<span class="badge badge-red">❌ 고위험 ${high.length}건</span>`;
+  if (med.length)  html += `<span class="badge badge-amber">⚠️ 주의 ${med.length}건</span>`;
+  if (!findings.length) html += `<span class="badge badge-green">✅ 특이사항 없음</span>`;
+  html += `</div>`;
+  
+  if (findings.length) {
+    html += findings.map(f => `
+      <div style="padding:6px 10px;border-radius:var(--radius);margin-bottom:4px;
+        background:${f.lv==='high'?'var(--red-bg)':f.lv==='med'?'var(--amber-bg)':'var(--blue-bg)'};
+        border:1px solid ${f.lv==='high'?'var(--red-bd)':f.lv==='med'?'var(--amber-bd)':'var(--blue-bd)'};
+        font-size:12px">
+        ${f.label}
+      </div>`).join('');
+  }
+  
+  html += `<div style="font-size:10px;color:var(--text3);margin-top:8px">※ 키워드 자동 분석 — 원문 및 AIS Korea 최종 확인 필수</div>`;
+  document.getElementById('notam-result').innerHTML = html;
+}
+
+/* ════════════════════════════════════════════════
+   환자판단
+════════════════════════════════════════════════ */
+function assessPatient() {
+  const spo2 = parseFloat(document.getElementById('pt-spo2').value)||99;
+  const sbp  = parseFloat(document.getElementById('pt-sbp').value)||120;
+  const hr   = parseFloat(document.getElementById('pt-hr').value)||80;
+  const gcs  = parseFloat(document.getElementById('pt-gcs').value)||15;
+  const vent    = document.getElementById('pt-vent').checked;
+  const cardiac = document.getElementById('pt-cardiac').checked;
+  const trauma  = document.getElementById('pt-trauma').checked;
+  const gas     = document.getElementById('pt-gas').checked;
+
+  const issues = [];
+  if (gas)     issues.push('⛔ 안내 가스(SF₆·C₃F₈) 잔류 — 이송 절대 금기');
+  if (cardiac) issues.push('🚨 심정지 / CPR 진행 중 — 즉시 이송 필요');
+  if (spo2 < 90)  issues.push(`SpO₂ ${spo2}% — 저산소증 (정상: ≥95%)`);
+  if (sbp < 90)   issues.push(`혈압 수축기 ${sbp}mmHg — 저혈압 (정상: ≥90)`);
+  if (hr > 120)   issues.push(`맥박 ${hr}회/분 — 빈맥 (정상: 60-100)`);
+  if (gcs <= 13)  issues.push(`GCS ${gcs}점 — 의식 저하 (정상: 15)`);
+  if (vent)    issues.push('🔌 인공호흡기 사용 중 — AW-189(3호기) 우선 배정');
+  if (trauma)  issues.push('🩸 다발 외상 — 권역외상센터 이송 검토');
+
+  const card = document.getElementById('pt-result-card');
+  const verdict = document.getElementById('pt-verdict');
+  const issueEl = document.getElementById('pt-issues');
+  card.style.display = 'block';
+
+  if (gas) {
+    verdict.className = 'verdict fail'; verdict.textContent = '🚫 이송 불가 (안내 가스 잔류)';
+  } else if (cardiac || spo2 < 85 || sbp < 80 || gcs <= 8) {
+    verdict.className = 'verdict fail'; verdict.textContent = '🚨 긴급 이송 필요';
+  } else if (issues.length > 0) {
+    verdict.className = 'verdict warn'; verdict.textContent = '⚠️ 이송 가능 (주의 필요)';
+  } else {
+    verdict.className = 'verdict ok'; verdict.textContent = '✅ 이송 가능';
+  }
+
+  issueEl.innerHTML = issues.length
+    ? issues.map(i => `<div style="padding:3px 0;border-bottom:1px solid var(--border)">• ${i}</div>`).join('')
+    : '<span style="color:var(--text3)">활력징후 정상 범위</span>';
+}
+
+/* ════════════════════════════════════════════════
+   정비현황 (localStorage)
+════════════════════════════════════════════════ */
+const MAINT_KEY = 'seoul_fire_maint_v2';
+
+function getMaintData() {
+  try { return JSON.parse(localStorage.getItem(MAINT_KEY)||'{}'); }
+  catch { return {}; }
+}
+function saveMaintData(data) {
+  localStorage.setItem(MAINT_KEY, JSON.stringify(data));
+}
+
+const STATUS_CFG = {
+  available:   {label:'✅ 출동가능',  color:'var(--green)',  bg:'var(--green-bg)', bd:'var(--green-bd)'},
+  mel_ok:      {label:'⚠️ 조건부',   color:'var(--amber)', bg:'var(--amber-bg)', bd:'var(--amber-bd)'},
+  unavailable: {label:'❌ 출동불가', color:'var(--red)',   bg:'var(--red-bg)',   bd:'var(--red-bd)'},
+  aog:         {label:'🔴 AOG',       color:'var(--red)',   bg:'rgba(239,68,68,.2)', bd:'var(--red-bd)'},
+};
+const TYPE_LABEL = {scheduled:'정기',unscheduled:'비정기',mel:'MEL',cdl:'CDL',inspection:'점검',aog:'AOG'};
+
+function renderMaintSummary() {
+  const data = getMaintData();
+  const el = document.getElementById('maint-summary');
+  el.innerHTML = Object.entries(AIRCRAFT).map(([id,ac]) => {
+    const items = (data[id]||[]).filter(i => i.status !== 'available');
+    const worst = items.find(i=>i.status==='aog') || items.find(i=>i.status==='unavailable') || items.find(i=>i.status==='mel_ok');
+    const cfg = worst ? STATUS_CFG[worst.status] : STATUS_CFG['available'];
+    return `<div class="summary-card" style="border-color:${cfg.bd};background:${cfg.bg}">
+      <div class="summary-ac">🚁 ${ac.name}</div>
+      <div class="summary-status" style="color:${cfg.color}">${cfg.label}</div>
+      ${items.length ? `<div style="font-size:10px;color:var(--text3);margin-top:3px">정비 ${items.length}건</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderMaintList() {
+  const data = getMaintData();
+  const items = (data[curMaintAC]||[]).sort((a,b) => (b.ts||0)-(a.ts||0));
+  const el = document.getElementById('maint-list');
+  
+  if (!items.length) {
+    el.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;border:1px dashed var(--border);border-radius:var(--radius)">정비 이력 없음</div>`;
+    return;
+  }
+  
+  el.innerHTML = items.map(item => {
+    const cfg = STATUS_CFG[item.status] || STATUS_CFG['available'];
+    const isMEL = item.type==='mel'||item.type==='cdl';
+    const overdue = item.endDt && new Date(item.endDt) < new Date() && item.status !== 'available';
+    return `<div style="border:1px solid ${overdue?'var(--red-bd)':cfg.bd};background:${overdue?'var(--red-bg)':cfg.bg};border-radius:var(--radius);padding:10px 12px;margin-bottom:6px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+        <div style="flex:1">
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:5px">
+            <span class="badge" style="background:var(--bg4);color:var(--text2)">${TYPE_LABEL[item.type]||item.type}</span>
+            <span style="font-size:12px;font-weight:700;color:${cfg.color}">${cfg.label}</span>
+            ${overdue?'<span class="badge badge-red">⏰ 기간 초과</span>':''}
+            ${isMEL&&item.melNum?`<span style="font-size:10px;font-family:var(--mono);background:var(--amber-bg);color:var(--amber);padding:1px 6px;border-radius:3px">${item.type.toUpperCase()} ${item.melNum} [Cat.${item.melCat||'?'}]</span>`:''}
+          </div>
+          <div style="font-size:12px;margin-bottom:4px">${item.desc||'—'}</div>
+          ${isMEL&&item.melLimit?`<div style="font-size:11px;color:var(--amber);margin-bottom:3px">⚠️ ${item.melLimit}</div>`:''}
+          ${isMEL&&item.melOM?`<div style="font-size:10px;color:var(--text2);margin-bottom:3px">O/M: ${item.melOM}</div>`:''}
+          <div style="font-size:10px;color:var(--text3)">
+            ${item.startDt?`시작: ${item.startDt.slice(0,16)} | `:''}
+            ${item.endDt?`완료예정: ${item.endDt.slice(0,16)}`:''} 
+            ${item.tech?` | 담당: ${item.tech}`:''}
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+          <button class="btn btn-ghost" style="padding:4px 8px;font-size:10px" onclick="editMaintItem('${item.id}')">✏️</button>
+          <button class="btn btn-danger" style="padding:4px 8px;font-size:10px" onclick="deleteMaintItem('${item.id}')">🗑</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selMaintAC(id, btn) {
+  curMaintAC = id;
+  document.querySelectorAll('#maint-ac-group .radio-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  renderMaintList();
+}
+
+function toggleMelFields() {
+  const t = document.getElementById('m-type').value;
+  document.getElementById('mel-fields').style.display = (t==='mel'||t==='cdl') ? 'block' : 'none';
+  if(t==='aog') document.getElementById('m-status').value='aog';
+  else if(t==='mel'||t==='cdl') document.getElementById('m-status').value='mel_ok';
+}
+
+function openMaintModal(id=null) {
+  document.getElementById('maint-edit-id').value = id||'';
+  document.getElementById('modal-title-text').textContent = id ? '정비 항목 수정' : '정비 항목 추가';
+  
+  if(id) {
+    const data = getMaintData();
+    const item = (data[curMaintAC]||[]).find(i=>i.id===id);
+    if(item) {
+      document.getElementById('m-type').value    = item.type||'scheduled';
+      document.getElementById('m-status').value  = item.status||'available';
+      document.getElementById('m-desc').value    = item.desc||'';
+      document.getElementById('m-start').value   = item.startDt||'';
+      document.getElementById('m-end').value     = item.endDt||'';
+      document.getElementById('m-tech').value    = item.tech||'';
+      document.getElementById('m-note').value    = item.note||'';
+      document.getElementById('m-mel-num').value  = item.melNum||'';
+      document.getElementById('m-mel-cat').value  = item.melCat||'B';
+      document.getElementById('m-mel-limit').value= item.melLimit||'';
+      document.getElementById('m-mel-om').value   = item.melOM||'';
+    }
+  } else {
+    ['m-desc','m-start','m-end','m-tech','m-note','m-mel-num','m-mel-limit','m-mel-om'].forEach(id=>{
+      document.getElementById(id).value='';
+    });
+    document.getElementById('m-type').value='scheduled';
+    document.getElementById('m-status').value='available';
+    document.getElementById('m-mel-cat').value='B';
+  }
+  toggleMelFields();
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeMaintModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+function saveMaintItem() {
+  const desc = document.getElementById('m-desc').value.trim();
+  if(!desc){alert('정비 내용을 입력해주세요.');return;}
+  
+  const editId = document.getElementById('maint-edit-id').value;
+  const item = {
+    id:       editId || 'm'+Date.now(),
+    type:     document.getElementById('m-type').value,
+    status:   document.getElementById('m-status').value,
+    desc,
+    startDt:  document.getElementById('m-start').value,
+    endDt:    document.getElementById('m-end').value,
+    tech:     document.getElementById('m-tech').value.trim(),
+    note:     document.getElementById('m-note').value.trim(),
+    melNum:   document.getElementById('m-mel-num').value.trim(),
+    melCat:   document.getElementById('m-mel-cat').value,
+    melLimit: document.getElementById('m-mel-limit').value.trim(),
+    melOM:    document.getElementById('m-mel-om').value.trim(),
+    ts:       Date.now(),
+  };
+  
+  const data = getMaintData();
+  if(!data[curMaintAC]) data[curMaintAC] = [];
+  
+  if(editId) {
+    const idx = data[curMaintAC].findIndex(i=>i.id===editId);
+    if(idx>=0) data[curMaintAC][idx]=item;
+    else data[curMaintAC].push(item);
+  } else {
+    data[curMaintAC].push(item);
+  }
+  
+  saveMaintData(data);
+  closeMaintModal();
+  renderMaintSummary();
+  renderMaintList();
+}
+
+function deleteMaintItem(id) {
+  if(!confirm('이 항목을 삭제하시겠습니까?')) return;
+  const data = getMaintData();
+  data[curMaintAC] = (data[curMaintAC]||[]).filter(i=>i.id!==id);
+  saveMaintData(data);
+  renderMaintSummary();
+  renderMaintList();
+}
+
+function editMaintItem(id) { openMaintModal(id); }
+
+/* ════════════════════════════════════════════════
+   비행계획서
+════════════════════════════════════════════════ */
+function gv(id){ return (document.getElementById(id)||{}).value||''; }
+function gc(id){ return (document.getElementById(id)||{}).checked||false; }
+
+function buildATSText() {
+  const now = new Date();
+  const ddhhmm = String(now.getUTCDate()).padStart(2,'0')+String(now.getUTCHours()).padStart(2,'0')+String(now.getUTCMinutes()).padStart(2,'0');
+  const call   = gv('fp-callsign').replace(/\s/g,'')||'FIREPOLICE';
+  const dep    = (gv('fp-dep')||'RKSS').padEnd(4,'X').slice(0,4).toUpperCase();
+  const arr    = (gv('fp-arr')||'RKSS').padEnd(4,'X').slice(0,4).toUpperCase();
+  const altn   = (gv('fp-altn')||'RKSS').padEnd(4,'X').slice(0,4).toUpperCase();
+  const etd    = gv('fp-etd').replace(':','')||'0000';
+  const spd    = gv('fp-spd')||'N0120';
+  const alt    = gv('fp-alt')||'VFR';
+  const route  = gv('fp-route')||'DCT';
+  const eet    = gv('fp-eet')||'0100';
+  const pax    = gv('fp-pax').padStart(3,'0')||'TBN';
+  const reg    = gv('fp-reg')||'HL____';
+  const p518   = gv('fp-p518');
+  const ssr    = gv('fp-ssr');
+  const pic    = gv('fp-pic')||'PILOT';
+  const rule   = gv('fp-rule')||'VG';
+  const endur  = gv('fp-endurance')||'0330';
+  const color  = gv('fp-color')||'RED AND WHITE';
+  const mission= gv('fp-mission-type')||'EMS FLT';
+  const dispRmk= gv('fp-disp-rmk');
+  const opNum  = call.replace(/[^0-9]/g,'').slice(-3)||'000';
+  
+  let rmk = 'NOTAM AND WEATHER CHECKED BY PILOT';
+  if(p518)    rmk += ` P-518 AUTH CODE/${p518}`;
+  if(ssr)     rmk += ` SSR/${ssr}`;
+  if(dispRmk) rmk += ` [DISP] ${dispRmk.toUpperCase()}`;
+  rmk += ` OP:${opNum} ${mission}`;
+  
+  return `GIA0000
+FF RKRRZQZX RKSSZPZX RKSSZTZX
+${ddhhmm} RKSSZPZX
+(FPL-${call}-${rule}
+-1AS65/L-S/C
+-${dep}${etd}
+-${spd}${alt} ${route}
+-${arr}${eet} ${altn}
+-REG/${reg}
+ CALL SIGN/${call}
+ CTC/NATIONAL FIRE AGENCY 0442057118
+ RMK/${rmk}
+
+-E/${endur} P/${pax} R/UVE
+ A/${color}
+ C/${pic})`;
+}
+
+function buildATS() {
+  atsText = buildATSText();
+  const card = document.getElementById('ats-card');
+  card.style.display = 'block';
+  document.getElementById('ats-text').textContent = atsText;
+  card.scrollIntoView({behavior:'smooth'});
+}
+
+function copyATS() {
+  if(navigator.clipboard) {
+    navigator.clipboard.writeText(atsText).then(() => alert('ATS Plan이 클립보드에 복사되었습니다.'));
+  } else {
+    prompt('아래 텍스트를 복사하세요:', atsText);
+  }
+}
+
+async function fetchWxForFPL() {
+  const dep  = gv('fp-dep').toUpperCase();
+  const arr  = gv('fp-arr').toUpperCase();
+  const altn = gv('fp-altn').toUpperCase();
+  
+  const isICAO = s => /^[A-Z]{4}$/.test(s);
+  const stations = [dep,arr,altn].filter(isICAO);
+  
+  if(!stations.length) {
+    alert('출발지·도착지를 ICAO 4자리 코드로 입력해주세요 (예: RKSS)');
+    return;
+  }
+  
+  const el = document.getElementById('ofp-area');
+  el.innerHTML = `<div class="loading"><span class="spinner"></span>기상 데이터 수집 중...</div>`;
+  
+  const wxResults = {};
+  await Promise.all(stations.map(async ic => {
+    const [m,t] = await Promise.all([kmaFetch('getMetar',ic),kmaFetch('getTaf',ic)]);
+    wxResults[ic] = {metar:parseMetar(m), taf:parseTaf(t)};
+  }));
+  const [sigData, airData] = await Promise.all([kmaFetch('getSigmet'),kmaFetch('getAirmet')]);
+  const sigmets = parseSigairmet(sigData,'sigmetMsg');
+  const airmets = parseSigairmet(airData,'airmetMsg');
+  
+  renderOFP(wxResults, sigmets, airmets);
+}
+
+function renderOFP(wxData={}, sigmets=[], airmets=[]) {
+  buildATS();
+  const now = new Date();
+  const ts = now.toUTCString().slice(5,25)+' UTC';
+  const etdFmt = gv('fp-etd');
+  const maint = getMaintData()[curMaintAC]||[];
+  const dispRmk = gv('fp-disp-rmk');
+  const p518 = gv('fp-p518');
+  const ssr  = gv('fp-ssr');
+  const opNum = gv('fp-callsign').replace(/[^0-9]/g,'').slice(-3)||'000';
+  const mission = gv('fp-mission-type')||'EMS FLT';
+  let rmkFull = 'NOTAM AND WEATHER CHECKED BY PILOT';
+  if(p518)    rmkFull += ` P-518 AUTH CODE/${p518}`;
+  if(ssr)     rmkFull += ` SSR/${ssr}`;
+  if(dispRmk) rmkFull += ` [DISP] ${dispRmk.toUpperCase()}`;
+  rmkFull += ` OP:${opNum} ${mission}`;
+
+  // 기상 섹션
+  let wxHtml = Object.entries(wxData).map(([ic,wx]) => `
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;padding:4px 8px;background:#dce8fb;color:#1a3a6b;border-radius:4px;margin-bottom:4px">${ic} — ${AIRPORTS[ic]||ic}</div>
+      <div style="font-size:9px;font-weight:700;color:#555;margin-bottom:2px">METAR</div>
+      <div style="font-family:Courier New,monospace;font-size:9px;line-height:1.6;padding:4px 6px;background:#f8f8f8;border:1px solid #ddd;border-radius:4px">${wx.metar||'— 데이터 없음 —'}</div>
+      <div style="font-size:9px;font-weight:700;color:#555;margin:4px 0 2px">TAF</div>
+      <div style="font-family:Courier New,monospace;font-size:9px;line-height:1.6;padding:4px 6px;background:#f8f8f8;border:1px solid #ddd;border-radius:4px">${wx.taf||'— 데이터 없음 —'}</div>
+    </div>`).join('');
+
+  // 정비 섹션
+  let maintHtml = '';
+  if(maint.length) {
+    const STATUS_KO={available:'✓ 출동가능',mel_ok:'△ 조건부',unavailable:'✗ 출동불가',aog:'AOG'};
+    const TYPE_KO={scheduled:'정기',unscheduled:'비정기',mel:'MEL',cdl:'CDL',inspection:'점검',aog:'AOG'};
+    maintHtml = `
+    <table style="width:100%;border-collapse:collapse;font-size:8.5px;margin-bottom:10px">
+      <tr style="background:#2d4a1e;color:#fff">
+        <th colspan="5" style="padding:4px 6px;text-align:left">정비 현황 (해당 기체)</th>
+      </tr>
+      <tr style="background:#f5f5f5">
+        <th style="padding:3px 6px;border:1px solid #ccc;font-weight:600">상태</th>
+        <th style="padding:3px 6px;border:1px solid #ccc;font-weight:600">구분</th>
+        <th style="padding:3px 6px;border:1px solid #ccc;font-weight:600">내용</th>
+        <th style="padding:3px 6px;border:1px solid #ccc;font-weight:600">제한사항</th>
+        <th style="padding:3px 6px;border:1px solid #ccc;font-weight:600">완료예정</th>
+      </tr>
+      ${maint.map(i=>`<tr style="${i.status==='aog'||i.status==='unavailable'?'background:#fff0f0':i.status==='mel_ok'?'background:#fffde7':''}">
+        <td style="padding:3px 6px;border:1px solid #ccc">${STATUS_KO[i.status]||i.status}</td>
+        <td style="padding:3px 6px;border:1px solid #ccc">${TYPE_KO[i.type]||i.type}${i.melNum?' '+i.melNum:''}</td>
+        <td style="padding:3px 6px;border:1px solid #ccc">${(i.desc||'').slice(0,40)}</td>
+        <td style="padding:3px 6px;border:1px solid #ccc">${(i.melLimit||'').slice(0,35)}</td>
+        <td style="padding:3px 6px;border:1px solid #ccc">${(i.endDt||'').slice(0,16)}</td>
+      </tr>`).join('')}
+    </table>`;
+  }
+
+  const ofp = `
+  <div style="background:#fff;color:#000;font-family:'Courier New',monospace;font-size:9.5px;padding:16px;max-width:800px;margin:0 auto;border:1px solid #bbb;border-radius:6px;line-height:1.6">
+    <div style="text-align:center;background:#fffde7;border:1px solid #e6c200;padding:4px;font-size:8px;font-weight:700;letter-spacing:.1em;color:#8a6500;margin-bottom:10px">
+      FOR REFERENCE ONLY — 운항 참고용 · 실제 ATC 제출은 공식 채널 이용
+    </div>
+    <div style="border-bottom:1.5px solid #000;padding-bottom:6px;margin-bottom:10px;display:flex;justify-content:space-between">
+      <div>
+        <div style="font-size:14px;font-weight:700;letter-spacing:.05em">FLIGHT PACKAGE</div>
+        <div style="font-size:8px;color:#555">서울특별시 소방재난본부 항공대 · AVIATION UNIT</div>
+      </div>
+      <div style="text-align:right;font-size:8px">
+        <div>REG: <b>${gv('fp-reg')||'HL____'}</b></div>
+        <div>${ts}</div>
+      </div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:8.5px;margin-bottom:8px">
+      <tr style="background:#111;color:#fff"><th colspan="4" style="padding:3px 6px;text-align:left">FLIGHT DATA</th></tr>
+      <tr><td style="padding:3px 6px;border:1px solid #ccc;background:#f5f5f5;font-weight:700;width:18%">MISSION</td><td style="padding:3px 6px;border:1px solid #ccc;width:32%">${mission}</td><td style="padding:3px 6px;border:1px solid #ccc;background:#f5f5f5;font-weight:700;width:18%">CALL SIGN</td><td style="padding:3px 6px;border:1px solid #ccc">${gv('fp-callsign')}</td></tr>
+      <tr><td style="padding:3px 6px;border:1px solid #ccc;background:#f5f5f5;font-weight:700">DEPARTURE</td><td style="padding:3px 6px;border:1px solid #ccc">${gv('fp-dep')}</td><td style="padding:3px 6px;border:1px solid #ccc;background:#f5f5f5;font-weight:700">ETD (UTC)</td><td style="padding:3px 6px;border:1px solid #ccc">${etdFmt}</td></tr>
+      <tr><td style="padding:3px 6px;border:1px solid #ccc;background:#f5f5f5;font-weight:700">DESTINATION</td><td style="padding:3px 6px;border:1px solid #ccc">${gv('fp-arr')}</td><td style="padding:3px 6px;border:1px solid #ccc;background:#f5f5f5;font-weight:700">ALTERNATE</td><td style="padding:3px 6px;border:1px solid #ccc">${gv('fp-altn')}</td></tr>
+      <tr><td style="padding:3px 6px;border:1px solid #ccc;background:#f5f5f5;font-weight:700">ALTITUDE</td><td style="padding:3px 6px;border:1px solid #ccc">${gv('fp-alt')}</td><td style="padding:3px 6px;border:1px solid #ccc;background:#f5f5f5;font-weight:700">PAX</td><td style="padding:3px 6px;border:1px solid #ccc">${gv('fp-pax')}</td></tr>
+      <tr><td style="padding:3px 6px;border:1px solid #ccc;background:#f5f5f5;font-weight:700">ROUTE</td><td colspan="3" style="padding:3px 6px;border:1px solid #ccc;word-break:break-all">${gv('fp-route')}</td></tr>
+    </table>
+    <table style="width:100%;border-collapse:collapse;font-size:8.5px;margin-bottom:8px">
+      <tr style="background:#111;color:#fff"><th colspan="4" style="padding:3px 6px;text-align:left">AIRSPACE AUTHORIZATION & TRANSPONDER</th></tr>
+      <tr style="${p518?'background:#fff8e1':''}">
+        <td style="padding:4px 6px;border:1px solid #ccc;background:#f5f5f5;font-weight:700;width:22%">P-518 AUTH CODE</td>
+        <td colspan="3" style="padding:4px 6px;border:1px solid #ccc;font-weight:700;color:${p518?'#8a4900':'#bbb'}">${p518||'— NOT ENTERED (REQUIRED FOR P-518 TRANSIT)'}</td>
+      </tr>
+      <tr style="${ssr?'background:#e8f5e9':''}">
+        <td style="padding:4px 6px;border:1px solid #ccc;background:#f5f5f5;font-weight:700">SSR / SQUAWK</td>
+        <td style="padding:4px 6px;border:1px solid #ccc;font-weight:700;font-size:14px;letter-spacing:.2em;color:${ssr?'#1a5c2a':'#bbb'}">${ssr||'----'}</td>
+        <td style="padding:4px 6px;border:1px solid #ccc;background:#f5f5f5;font-weight:700">비고</td>
+        <td style="padding:4px 6px;border:1px solid #ccc;font-size:8px;color:#555">${ssr?'ATC 지정 — 이륙 전 설정 필수':'기본 VFR: 7000'}</td>
+      </tr>
+    </table>
+    ${maintHtml}
+    ${Object.keys(wxData).length?`
+    <table style="width:100%;border-collapse:collapse;font-size:8.5px;margin-bottom:8px">
+      <tr style="background:#1a3a6b;color:#fff"><th colspan="2" style="padding:3px 6px;text-align:left">WEATHER — METAR / TAF</th></tr>
+    </table>
+    ${wxHtml}`:''}
+    ${sigmets.length?`<table style="width:100%;border-collapse:collapse;font-size:8.5px;margin-bottom:8px"><tr style="background:#8b0000;color:#fff"><th style="padding:3px 6px;text-align:left">⚠ SIGMET</th></tr>${sigmets.map(s=>`<tr><td style="padding:4px 6px;border:1px solid #ccc;font-family:Courier New,monospace;font-size:8.5px">${s}</td></tr>`).join('')}</table>`:''}
+    ${airmets.length?`<table style="width:100%;border-collapse:collapse;font-size:8.5px;margin-bottom:8px"><tr style="background:#8b4500;color:#fff"><th style="padding:3px 6px;text-align:left">⚠ AIRMET</th></tr>${airmets.map(a=>`<tr><td style="padding:4px 6px;border:1px solid #ccc;font-family:Courier New,monospace;font-size:8.5px">${a}</td></tr>`).join('')}</table>`:''}
+    ${dispRmk?`<table style="width:100%;border-collapse:collapse;font-size:8.5px;margin-bottom:8px"><tr style="background:#8a4900;color:#fff"><th style="padding:3px 6px;text-align:left">⚠️ 운항관리사 주의사항 (DISPATCHER REMARKS)</th></tr><tr><td style="padding:6px;border:1px solid #e6c200;background:#fffde7;font-family:sans-serif">${dispRmk}</td></tr></table>`:''}
+    <table style="width:100%;border-collapse:collapse;font-size:8.5px;margin-bottom:8px">
+      <tr style="background:#111;color:#fff"><th style="padding:3px 6px;text-align:left">OFP REMARKS</th></tr>
+      <tr><td style="padding:5px 6px;border:1px solid #ccc;word-break:break-all">${rmkFull}</td></tr>
+    </table>
+    <table style="width:100%;border-collapse:collapse;font-size:8.5px;margin-bottom:8px">
+      <tr style="background:#111;color:#fff"><th colspan="2" style="padding:3px 6px;text-align:left">AUTHORIZATION</th></tr>
+      <tr>
+        <td style="padding:8px 6px;border:1px solid #ccc;width:50%">
+          <div style="font-weight:700;margin-bottom:2px">DISPATCHER / 운항관리사</div>
+          <div style="font-size:10px">${gv('fp-disp')||'_______________'}</div>
+          <div style="margin-top:18px;border-top:1px solid #aaa;padding-top:2px;font-size:7px;color:#888">SIGNATURE & DATE</div>
+        </td>
+        <td style="padding:8px 6px;border:1px solid #ccc">
+          <div style="font-weight:700;margin-bottom:2px">PILOT IN COMMAND / 기장</div>
+          <div style="font-size:10px">${gv('fp-pic')||'_______________'}</div>
+          <div style="margin-top:18px;border-top:1px solid #aaa;padding-top:2px;font-size:7px;color:#888">SIGNATURE & DATE</div>
+        </td>
+      </tr>
+      <tr><td colspan="2" style="padding:4px 6px;border:1px solid #ccc;font-size:7px;color:#666;text-align:center">I AGREE THIS FLIGHT IS RELEASED IN ACCORDANCE WITH CIVIL AVIATION LAW AND APPLICABLE REGULATIONS.</td></tr>
+    </table>
+    <div style="text-align:center;font-size:7px;color:#aaa;border-top:1px solid #ddd;padding-top:5px">
+      FOR REFERENCE ONLY · 서울소방재난본부 항공대 · ${ts} · 기상: 기상청 공공데이터포털
+    </div>
+  </div>`;
+
+  document.getElementById('ofp-area').innerHTML = ofp +
+    `<div class="btn-row no-print" style="margin-top:10px">
+      <button class="btn btn-primary" onclick="window.print()">🖨️ 인쇄 / PDF 저장</button>
+    </div>`;
+  document.getElementById('ofp-area').scrollIntoView({behavior:'smooth'});
+}
+
+function printOFP() {
+  if(!document.getElementById('ofp-area').innerHTML) {
+    fetchWxForFPL().then(() => setTimeout(()=>window.print(), 1000));
+  } else {
+    window.print();
+  }
+}
+
+function resetFPL() {
+  ['fp-callsign','fp-reg','fp-dep','fp-arr','fp-altn','fp-etd','fp-spd','fp-alt','fp-eet',
+   'fp-pax','fp-route','fp-p518','fp-ssr','fp-endurance','fp-color','fp-pic','fp-disp','fp-disp-rmk'
+  ].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
+  ['fp-wx-dep','fp-wx-enr','fp-wx-arr','fp-notam-ck'].forEach(id=>{
+    const e=document.getElementById(id); if(e) e.checked=false;
+  });
+  document.getElementById('ats-card').style.display='none';
+  document.getElementById('ofp-area').innerHTML='';
+}
+
+/* ════════════════════════════════════════════════
+   관련 법령
+════════════════════════════════════════════════ */
+function renderLaws() {
+  document.getElementById('law-list').innerHTML = LAWS.map(law => `
+    <div class="law-card">
+      <div class="law-info">
+        <div class="law-name">${law.name}</div>
+        <div class="law-desc">${law.desc}</div>
+        <div style="font-size:9px;color:var(--text3);margin-top:2px;word-break:break-all">${law.url}</div>
+      </div>
+      <button class="btn btn-ghost" style="padding:6px 10px;font-size:11px;flex-shrink:0" onclick="copyUrl('${law.url}')">📋 복사</button>
+    </div>`).join('');
+}
+
+function copyUrl(url) {
+  if(navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => {
+      alert(`✅ 클립보드에 복사되었습니다.\n\nSafari 주소창에 붙여넣기하여 접속하세요.\n\n${url}`);
+    });
+  } else {
+    prompt('아래 주소를 복사하여 Safari에서 열어주세요:', url);
+  }
+}
+</script>
+</body>
+</html>
